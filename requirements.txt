@@ -1,4 +1,9 @@
-pytest
+pytest~=8.4.1
 allure-pytest
-selene
-selenium
+selene~=2.0.0rc9
+selenium~=4.34.1
+webdriver-manager~=4.0.2
+requests~=2.32.4
+pypdf~=5.9.0
+openpyxl~=3.1.5
+xlrd~=2.0.2
