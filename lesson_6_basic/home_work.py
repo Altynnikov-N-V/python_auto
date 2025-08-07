@@ -54,7 +54,6 @@ def test_find_suitable_user():
             suitable_users = user
     assert suitable_users == {"name": "Olga", "age": 45}
 
-
     suitable_users = []
     for user in users:
         if user['age'] < 20:
