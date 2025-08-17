@@ -209,3 +209,6 @@ __marimo__/
 /.idea
 /venv
 /get-pip.py
+
+#Allure
+tests/allure-results
