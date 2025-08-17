@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 def image_path(file_name):
-    return  os.path.abspath(f'{file_name}')
+  return  str((Path(__file__).resolve().parents[2] / 'demoga_tests' / file_name).absolute())
