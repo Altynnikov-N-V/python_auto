@@ -1,6 +1,8 @@
+import allure
+
 from demoga_tests.model.pages.registration_page import RegistrationPage
 
-
+@allure.title("Тестирование заполнение формы")
 def test_student_registration_form():
     registration_page = RegistrationPage()
     registration_page.open()
