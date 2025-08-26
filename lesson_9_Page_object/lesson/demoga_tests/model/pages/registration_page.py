@@ -2,7 +2,6 @@ from selene import have, command, by, be
 from selene.support.shared import browser
 from lesson_9_Page_object.lesson.demoga_tests.model import resource
 
-
 class RegistrationPage:
     def __init__(self):
         self.first_name = browser.element('#firstName')
