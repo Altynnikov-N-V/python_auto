@@ -3,9 +3,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selene import browser, Config
-
 from lesson_9_Page_object.utils import attach
-
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -40,12 +38,12 @@ def setup_browser(request):
         options=options
     )
 
-    browser = Browser(Config(driver))
-    yield browser
+    browser1 = Browser(Config(driver))
+    yield browser1
 
-    attach.add_screenshot(browser)
-    attach.add_logs(browser)
-    attach.add_html(browser)
-    attach.add_video(browser)
+    attach.add_screenshot(browser1)
+    attach.add_logs(browser1)
+    attach.add_html(browser1)
+    attach.add_video(browser1)
 
-    browser.quit()
+    browser1.quit()
