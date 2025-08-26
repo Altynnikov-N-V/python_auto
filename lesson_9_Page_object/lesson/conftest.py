@@ -18,7 +18,8 @@ chrome_options.add_argument("--remote-debugging-port=9222")
 chrome_options.add_argument("--incognito")
 chrome_options.add_argument("--no-first-run")
 chrome_options.add_argument("--no-default-browser-check")
-
+browser.config.window_width = 1920
+browser.config.window_height = 1080
 browser.config.driver_options = chrome_options
 browser.config.driver_manager = ChromeDriverManager()
 
