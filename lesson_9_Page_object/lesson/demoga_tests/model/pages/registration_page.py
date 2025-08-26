@@ -1,6 +1,6 @@
 from selene import have, command, by, be
 from selene.support.shared import browser
-from lesson_9_Page_object.lesson.demoga_tests.model import resource
+from lesson_9_Page_object import resource
 
 
 class RegistrationPage:
