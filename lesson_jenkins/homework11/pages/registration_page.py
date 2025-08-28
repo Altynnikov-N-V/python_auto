@@ -35,7 +35,7 @@ class RegistrationPage:
             browser.element('#subjectsInput').should(be.visible).type(user.subject).press_enter()
         with allure.step("Выбор хобби"):
             element = browser.element(f'//label[text()="{user.hobby}"]')
-            browser.execute_script("arguments[0].click();", element.locate())
+            browser.driver.execute_script("arguments[0].click();", element.locate())
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
         with allure.step("Выбор адреса"):
