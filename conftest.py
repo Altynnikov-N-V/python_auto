@@ -6,7 +6,7 @@ from selene import browser
 import tempfile
 import shutil
 import os
-from utils import attach
+from lesson_jenkins.utils import attach
 
 
 @pytest.fixture(scope='function', autouse=True)
