@@ -32,7 +32,7 @@ def setup_browser():
     # Добавление вложений
     from lesson_jenkins.utils import attach
     attach.add_screenshot(browser)
-    attach.add_logs(browser)
+    # attach.add_logs(browser)
     attach.add_html(browser)
     attach.add_video(browser)  # Теперь видео будет работать
 
