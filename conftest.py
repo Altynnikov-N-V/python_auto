@@ -1,11 +1,11 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selene import browser
 import tempfile
 import shutil
+import os
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -24,8 +24,11 @@ def setup_browser():
     temp_user_data_dir = tempfile.mkdtemp()
     chrome_options.add_argument(f'--user-data-dir={temp_user_data_dir}')
 
-    # Используем webdriver-manager для автоматической установки ChromeDriver
-    service = Service(ChromeDriverManager().install())
+    # Используем установленный ChromeDriver
+    chromedriver_path = os.getenv('CHROMEDRIVER_PATH', '/usr/local/bin/chromedriver')
+
+    # Установка и настройка драйвера
+    service = Service(executable_path=chromedriver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Конфигурация Selene
