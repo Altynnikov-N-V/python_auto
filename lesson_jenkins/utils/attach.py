@@ -1,39 +1,41 @@
 import allure
-from allure_commons.types import AttachmentType
+from selene import browser
 
 def add_screenshot(browser):
-    try:
-        allure.attach(
-            browser.driver.get_screenshot_as_png(),
-            name="Screenshot",
-            attachment_type=AttachmentType.PNG
-        )
-    except Exception:
-        pass
-
-def add_html(browser):
-    try:
-        allure.attach(
-            browser.driver.page_source,
-            name='page_source',
-            attachment_type=AttachmentType.HTML,
-        )
-    except Exception:
-        pass
+    png = browser.driver.get_screenshot_as_png()
+    allure.attach(
+        body=png,
+        name='screenshot',
+        attachment_type=allure.attachment_type.PNG,
+        extension='.png'
+    )
 
 def add_logs(browser):
-    try:
-        logs = '\n'.join([f"[{l['level']}] {l['message']}" for l in browser.driver.get_log('browser')])
-        allure.attach(logs, name='browser_console', attachment_type=AttachmentType.TEXT)
-    except Exception:
-        pass
+    log = "".join(f'{text}\n' for text in browser.driver.get_log('browser'))
+    allure.attach(
+        body=log,
+        name='browser_logs',
+        attachment_type=allure.attachment_type.TEXT,
+        extension='.log'
+    )
+
+def add_html(browser):
+    html = browser.driver.page_source
+    allure.attach(
+        body=html,
+        name='page_source',
+        attachment_type=allure.attachment_type.HTML,
+        extension='.html'
+    )
 
 def add_video(browser):
-    # для selenoid.autotests.cloud стандартная ссылка на видео по session_id
-    try:
-        session = browser.driver.session_id
-        host = 'selenoid.autotests.cloud'
-        url = f'https://{host}/video/{session}.mp4'
-        allure.attach(url, name='video_url', attachment_type=AttachmentType.URI_LIST)
-    except Exception:
-        pass
+    video_url = "https://selenoid.autotests.cloud/video/" + browser.driver.session_id + ".mp4"
+    html = "<html><body><video width='100%' height='100%' controls autoplay><source src='" \
+           + video_url \
+           + "' type='video/mp4'></video></body></html>"
+    allure.attach(
+        body=html,
+        name='video_' + browser.driver.session_id,
+        attachment_type=allure.attachment_type.HTML,
+        extension='.html'
+    )

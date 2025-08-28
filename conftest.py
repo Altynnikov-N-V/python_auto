@@ -6,6 +6,7 @@ from selene import browser
 import tempfile
 import shutil
 import os
+from utils import attach
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -39,12 +40,13 @@ def setup_browser():
 
     yield
 
-    try:
-        yield browser
-    finally:
-        with allure.step('Tear down'):
-            attach.add_screenshot(browser)
-            attach.add_logs(browser)
-            attach.add_html(browser)
-            attach.add_video(browser)
-        browser.quit()
+    # ТЕЛО ФИКСТУРЫ ДОЛЖНО БЫТЬ ЗДЕСЬ, а не второй yield
+    # Добавление вложений Allure
+    attach.add_screenshot(browser)
+    attach.add_logs(browser)
+    attach.add_html(browser)
+    attach.add_video(browser)
+
+    # Завершение
+    browser.quit()
+    shutil.rmtree(temp_user_data_dir, ignore_errors=True)
