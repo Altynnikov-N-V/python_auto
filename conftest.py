@@ -7,9 +7,9 @@ from selene import browser
 
 @pytest.fixture(scope='function', autouse=True)
 def setup_browser():
-    login = os.getenv('SELENOID_LOGIN')
-    password = os.getenv('SELENOID_PASS')
-    host = os.getenv('SELENOID_URL')
+    login = os.getenv('SELENOID_LOGIN', 'user1')
+    password = os.getenv('SELENOID_PASS', '1234')
+    host = os.getenv('SELENOID_URL', 'selenoid.autotests.cloud')
 
     options = Options()
     options.set_capability('browserName', 'chrome')
