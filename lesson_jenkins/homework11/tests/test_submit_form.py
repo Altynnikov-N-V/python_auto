@@ -7,18 +7,18 @@ from lesson_jenkins.homework11.models.user import User
 
 def test_fill_form():
     sofi = User(
-        first_name="София",
-        last_name="Кропотова",
+        first_name="Маргарита",
+        last_name="Иванова",
         email="sofia@example.com",
         gender="Female",
-        phone="9220798421",
-        day=12,
+        phone="1234567890",
+        day=115,
         month="June",
-        year=1997,
+        year=1990,
         subject="Maths",
         hobby="Sports",
         file_name="test.png",
-        address="Нижний Новгород, ул. Королева, д. 4",
+        address="Moscow, ул. Советская, д. 4",
         state="NCR",
         city="Delhi"
     )
