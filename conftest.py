@@ -1,6 +1,7 @@
 
 import os
 import pytest
+from selenium.webdriver.remote.remote_connection import RemoteConnection
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -28,10 +29,6 @@ def remote_browser_setup():
     options.set_capability('selenoid:options', {'enableVNC': True, 'enableVideo': True})
     options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
 
-    driver = webdriver.Remote(
-        command_executor=f'https://{login}:{password}@{host}/wd/hub',
-        options=options
-    )
     browser.config.driver = driver
     yield
     browser.quit()
