@@ -1,31 +1,34 @@
 import pytest
-import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 from selene import browser
+import tempfile
+import shutil
 
 
 @pytest.fixture(scope='function', autouse=True)
-def remote_browser_setup():
-    login = os.getenv('SELENOID_LOGIN')
-    password = os.getenv('SELENOID_PASS')
-    host = os.getenv('SELENOID_URL', '')
+def setup_browser():
+    # Настройка Chrome options для локального запуска
+    chrome_options = Options()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--incognito')
+    chrome_options.add_argument('--no-first-run')
+    chrome_options.add_argument('--no-default-browser-check')
 
-    assert all([login, password, host]), f'ENV missing: login={bool(login)}, pass={bool(password)}, url={bool(host)}'
+    # Уникальная user-data директория чтобы избежать конфликтов
+    temp_user_data_dir = tempfile.mkdtemp()
+    chrome_options.add_argument(f'--user-data-dir={temp_user_data_dir}')
 
-    host = host.replace('http://', '').replace('https://', '').rstrip('/')
+    # Установка и настройка драйвера
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    options = Options()
-    options.set_capability('browserName', 'chrome')
-    options.set_capability('browserVersion', '128.0')
-    options.set_capability('selenoid:options', {'enableVNC': True, 'enableVideo': True})
-    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
-
-    driver = webdriver.Remote(
-        command_executor=f"https://{login}:{password}@{host}/wd/hub",
-        options=options
-    )
-
+    # Конфигурация Selene
     browser.config.driver = driver
     browser.config.timeout = 10
     browser.config.window_width = 1920
@@ -33,4 +36,6 @@ def remote_browser_setup():
 
     yield
 
+    # Завершение
     browser.quit()
+    shutil.rmtree(temp_user_data_dir, ignore_errors=True)
