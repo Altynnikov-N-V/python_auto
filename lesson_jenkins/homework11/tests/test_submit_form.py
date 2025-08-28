@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from lesson_jenkins.homework11.pages.registration_page import RegistrationPage
-from lesson_jenkins.homework11.models import user
+from lesson_jenkins.homework11.models.user import User
 
 
 def test_fill_form():
