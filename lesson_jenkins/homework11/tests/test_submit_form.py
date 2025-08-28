@@ -12,7 +12,7 @@ def test_fill_form():
         email="sofia@example.com",
         gender="Female",
         phone="1234567890",
-        day=115,
+        day=15,
         month="June",
         year=1990,
         subject="Maths",
