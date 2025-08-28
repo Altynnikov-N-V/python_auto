@@ -5,8 +5,8 @@ def add_screenshot(browser):
     try:
         allure.attach(
             browser.driver.get_screenshot_as_png(),
-            name='screenshot',
-            attachment_type=AttachmentType.PNG,
+            name="Screenshot",
+            attachment_type=AttachmentType.PNG
         )
     except Exception:
         pass

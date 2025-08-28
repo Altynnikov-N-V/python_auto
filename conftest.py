@@ -39,6 +39,12 @@ def setup_browser():
 
     yield
 
-    # Завершение
-    browser.quit()
-    shutil.rmtree(temp_user_data_dir, ignore_errors=True)
+    try:
+        yield browser
+    finally:
+        with allure.step('Tear down'):
+            attach.add_screenshot(browser)
+            attach.add_logs(browser)
+            attach.add_html(browser)
+            attach.add_video(browser)
+        browser.quit()
