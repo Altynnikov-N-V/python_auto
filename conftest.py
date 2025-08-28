@@ -20,7 +20,7 @@ def setup_browser():
     })
 
     driver = webdriver.Remote(
-        command_executor=f"https://{login}:{user1}@{host}/wd/hub",
+        command_executor=f"https://{login}:{password}@{host}/wd/hub",
         options=options
     )
 
