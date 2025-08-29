@@ -1,4 +1,5 @@
 import os
+import time
 
 from selene import browser, have, be
 from lesson_jenkins.homework11.models import User
@@ -24,8 +25,6 @@ class RegistrationPage:
             browser.element(f'//label[text()="{user.gender}"]').click()
         with allure.step("Заполнение номера телефона"):
             browser.element('#userNumber').type(user.phone)
-
-        # birthday
         with allure.step("Заполнение даты рождения"):
             browser.element('#dateOfBirthInput').click()
             browser.element('.react-datepicker__month-select').send_keys(user.month)
@@ -39,21 +38,17 @@ class RegistrationPage:
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
         with allure.step("Выбор адреса"):
-            state_element = browser.element('#state')
-            browser.execute_script("arguments[0].scrollIntoView(true);", state_element.locate())
-            browser.execute_script("arguments[0].click();", state_element.locate())
-
-            state_option = browser.element(f'//div[text()="{user.state}"]')
-            browser.execute_script("arguments[0].scrollIntoView(true);", state_option.locate())
-            browser.execute_script("arguments[0].click();", state_option.locate())
-
-            city_element = browser.element('#city')
-            browser.execute_script("arguments[0].scrollIntoView(true);", city_element.locate())
-            browser.execute_script("arguments[0].click();", city_element.locate())
-
-            city_option = browser.element(f'//div[text()="{user.city}"]')
-            browser.execute_script("arguments[0].scrollIntoView(true);", city_option.locate())
-            browser.execute_script("arguments[0].click();", city_option.locate())
+            browser.element('#currentAddress').type(user.address)
+            state_dropdown = browser.element('#state')
+            state_dropdown.click()
+            browser.element('div[class*="menu"]').should(be.visible)
+            state_option = browser.element(f'//div[contains(@class, "option") and text()="{user.state}"]')
+            state_option.click()
+            city_dropdown = browser.element('#city')
+            city_dropdown.click()
+            browser.element('div[class*="menu"]').should(be.visible)
+            city_option = browser.element(f'//div[contains(@class, "option") and text()="{user.city}"]')
+            city_option.click()
         with allure.step("Отправка формы"):
             browser.element('#submit').click()
         return self
