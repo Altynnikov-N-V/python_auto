@@ -37,18 +37,6 @@ class RegistrationPage:
             browser.driver.execute_script("arguments[0].click();", element.locate())
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
-        with allure.step("Выбор адреса"):
-            browser.element('#currentAddress').type(user.address)
-            state_dropdown = browser.element('#state')
-            state_dropdown.click()
-            browser.element('div[class*="menu"]').should(be.visible)
-            state_option = browser.element(f'//div[contains(@class, "option") and text()="{user.state}"]')
-            state_option.click()
-            city_dropdown = browser.element('#city')
-            city_dropdown.click()
-            browser.element('div[class*="menu"]').should(be.visible)
-            city_option = browser.element(f'//div[contains(@class, "option") and text()="{user.city}"]')
-            city_option.click()
         with allure.step("Отправка формы"):
             browser.element('#submit').click()
         return self
