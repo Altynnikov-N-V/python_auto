@@ -40,7 +40,10 @@ class RegistrationPage:
             browser.element('#uploadPicture').send_keys(file_path)
         with allure.step("Выбор адреса"):
             browser.element('#currentAddress').type(user.address)
-            browser.element('#state').click().element(f'//div[text()="{user.state}"]').click()
+            state_element = browser.element('#state')
+            browser.execute_script("arguments[0].click();", state_element)
+            state_option = browser.element(f'//div[text()="{user.state}"]')
+            browser.execute_script("arguments[0].click();", state_option)
             browser.element('#city').click().element(f'//div[text()="{user.city}"]').click()
         with allure.step("Отправка формы"):
             browser.element('#submit').press_enter()
