@@ -11,17 +11,56 @@ class RegistrationPage:
         with allure.step("Переход на страницу"):
             browser.open('https://demoqa.com/automation-practice-form')
             browser.driver.maximize_window()
-            # Удаляем мешающие элементы и ждем загрузки
-            self.remove_obstructing_elements()
-            time.sleep(2)  # Ждем полной загрузки страницы
+            # Ждем загрузки страницы
+            time.sleep(3)
+
+            # Отладочная информация
+            self.debug_page_elements()
+
         return self
+
+    def debug_page_elements(self):
+        """Отладочная информация о элементах страницы"""
+        print("=== DEBUG: Page Elements ===")
+
+        # Проверяем наличие основных элементов
+        elements_to_check = [
+            '#firstName', '#lastName', '#userEmail', '#userNumber',
+            '#dateOfBirthInput', '#subjectsInput', '#uploadPicture',
+            '#currentAddress', '#state', '#city', '#submit'
+        ]
+
+        for selector in elements_to_check:
+            try:
+                element = browser.element(selector)
+                print(f"✓ Found: {selector}")
+            except:
+                print(f"✗ Missing: {selector}")
+
+        # Проверяем элементы пола
+        print("\nGender elements:")
+        gender_inputs = browser.all('input[name="gender"]')
+        for i, inp in enumerate(gender_inputs):
+            try:
+                value = inp.locate().get_attribute('value')
+                id_attr = inp.locate().get_attribute('id')
+                print(f"Gender {i}: value={value}, id={id_attr}")
+            except:
+                print(f"Gender {i}: cannot get attributes")
+
+        # Проверяем элементы хобби
+        print("\nHobby elements:")
+        hobby_inputs = browser.all('input[type="checkbox"]')
+        for i, inp in enumerate(hobby_inputs):
+            try:
+                value = inp.locate().get_attribute('value')
+                id_attr = inp.locate().get_attribute('id')
+                print(f"Hobby {i}: value={value}, id={id_attr}")
+            except:
+                print(f"Hobby {i}: cannot get attributes")
 
     def register(self, user: User):
         file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'resources', user.file_name))
-
-        # Прокручиваем в начало
-        browser.execute_script("window.scrollTo(0, 0);")
-        time.sleep(1)
 
         with allure.step("Заполнение имени"):
             browser.element('#firstName').type(user.first_name)
@@ -33,10 +72,23 @@ class RegistrationPage:
             browser.element('#userEmail').type(user.email)
 
         with allure.step("Выбор пола"):
-            # Правильный селектор для radio button - используем label с текстом
-            gender_label = browser.element(f'//label[contains(text(), "{user.gender}")]')
-            browser.driver.execute_script("arguments[0].scrollIntoView(true);", gender_label.locate())
-            browser.driver.execute_script("arguments[0].click();", gender_label.locate())
+            # Пробуем разные варианты селекторов
+            try:
+                # Вариант 1: по value
+                browser.element('input[value="Female"]').click()
+            except:
+                try:
+                    # Вариант 2: по name и значению
+                    browser.element('input[name="gender"][value="Female"]').click()
+                except:
+                    try:
+                        # Вариант 3: через label
+                        browser.element('label[for="gender-radio-2"]').click()
+                    except:
+                        # Вариант 4: просто кликнем на второй radio
+                        gender_inputs = browser.all('input[name="gender"]')
+                        if len(gender_inputs) > 1:
+                            gender_inputs[1].click()
 
         with allure.step("Заполнение номера телефона"):
             browser.element('#userNumber').type(user.phone)
@@ -45,113 +97,49 @@ class RegistrationPage:
             browser.element('#dateOfBirthInput').click()
             browser.element('.react-datepicker__month-select').send_keys(user.month)
             browser.element('.react-datepicker__year-select').send_keys(str(user.year))
-            # Исправленный селектор для дня
-            day_element = browser.element(
-                f'//div[contains(@class, "react-datepicker__day") and not(contains(@class, "outside")) and text()="{user.day}"]')
-            browser.driver.execute_script("arguments[0].click();", day_element.locate())
+            # Селектор для дня
+            browser.element(f'.react-datepicker__day--0{user.day}').click()
 
         with allure.step("Выбор предмета"):
-            browser.element('#subjectsInput').should(be.visible).type(user.subject)
-            # Ждем появления опций и выбираем первую
-            browser.element('div[class*="option"]').with_(timeout=5).click()
+            browser.element('#subjectsInput').type(user.subject)
+            browser.element('#subjectsInput').press_enter()
 
         with allure.step("Выбор хобби"):
-            # Правильный селектор для хобби - используем label с текстом
-            hobby_label = browser.element(f'//label[contains(text(), "{user.hobby}")]')
-            browser.driver.execute_script("arguments[0].scrollIntoView(true);", hobby_label.locate())
-            browser.driver.execute_script("arguments[0].click();", hobby_label.locate())
+            # Пробуем разные варианты селекторов для хобби
+            try:
+                browser.element('input[value="1"]').click()
+            except:
+                try:
+                    browser.element('input[id="hobbies-checkbox-1"]').click()
+                except:
+                    try:
+                        browser.element('label[for="hobbies-checkbox-1"]').click()
+                    except:
+                        # Кликнем на первый чекбокс
+                        hobby_inputs = browser.all('input[type="checkbox"]')
+                        if len(hobby_inputs) > 0:
+                            hobby_inputs[0].click()
 
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
 
         with allure.step("Выбор адреса"):
-            browser.execute_script("document.querySelector('#uploadPicture').scrollIntoView(true);")
+            browser.execute_script("window.scrollBy(0, 300);")
             browser.element('#currentAddress').type(user.address)
 
         with allure.step("Выбор штата и города"):
-            browser.execute_script("document.querySelector('#currentAddress').scrollIntoView(true);")
-            self.select_dropdown_option('#state', user.state)
-            self.select_dropdown_option('#city', user.city)
+            # Простой способ через клики
+            browser.element('#state').click()
+            browser.element(f'//div[text()="{user.state}"]').click()
+
+            browser.element('#city').click()
+            browser.element(f'//div[text()="{user.city}"]').click()
 
         with allure.step("Отправка формы"):
-            # Прокручиваем к кнопке и кликаем через JavaScript
-            browser.execute_script("document.querySelector('#city').scrollIntoView(true);")
-            time.sleep(1)
-            browser.execute_script("window.scrollBy(0, 100);")
-            time.sleep(1)
-            browser.execute_script("document.querySelector('#submit').click();")
+            browser.execute_script("document.querySelector('#submit').scrollIntoView(true);")
+            browser.element('#submit').click()
 
         return self
-
-    def select_dropdown_option(self, dropdown_selector, option_text):
-        """Выбор опции в выпадающем списке через JavaScript"""
-        try:
-            browser.execute_script(f"""
-                var dropdown = document.querySelector('{dropdown_selector}');
-                if (dropdown) {{
-                    // Прокручиваем к элементу
-                    dropdown.scrollIntoView({{behavior: 'smooth', block: 'center'}});
-
-                    // Кликаем чтобы открыть список
-                    dropdown.click();
-
-                    // Ждем и ищем нужную опцию
-                    setTimeout(function() {{
-                        var options = document.querySelectorAll('div[class*="option"]');
-                        for (var i = 0; i < options.length; i++) {{
-                            if (options[i].textContent.trim() === '{option_text}') {{
-                                // Кликаем на опцию
-                                options[i].click();
-                                break;
-                            }}
-                        }}
-                    }}, 2000);
-                }}
-            """)
-            time.sleep(2)  # Ждем завершения выбора
-        except Exception as e:
-            print(f"Error selecting dropdown option {option_text}: {e}")
-            # Альтернативный способ - простой клик по dropdown
-            try:
-                browser.element(dropdown_selector).click()
-                time.sleep(1)
-                option = browser.element(f'//div[text()="{option_text}"]')
-                option.click()
-            except Exception as e2:
-                print(f"Alternative method also failed: {e2}")
-
-    def remove_obstructing_elements(self):
-        """Удаление элементов, которые могут мешать взаимодействию"""
-        try:
-            browser.execute_script("""
-                // Удаляем рекламные баннеры и мешающие элементы
-                var elementsToRemove = [
-                    'footer', 
-                    'header',
-                    'div[class*="ad"]',
-                    'div[class*="banner"]',
-                    'div[style*="fixed"]',
-                    'div[style*="absolute"]',
-                    'iframe',
-                    'span[style*="position"]',
-                    'div[class*="popup"]',
-                    'div[class*="modal"]'
-                ];
-
-                elementsToRemove.forEach(function(selector) {
-                    var elements = document.querySelectorAll(selector);
-                    elements.forEach(function(el) {
-                        if (el && el.parentNode) {
-                            el.parentNode.removeChild(el);
-                        }
-                    });
-                });
-
-                // Включаем прокрутку
-                document.body.style.overflow = 'auto';
-            """)
-        except Exception as e:
-            print(f"Error removing elements: {e}")
 
     def should_have_registered(self, user: User):
         with allure.step("Проверка формы"):
