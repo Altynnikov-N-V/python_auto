@@ -10,16 +10,18 @@ class RegistrationPage:
     def open_form(self):
         with allure.step("Переход на страницу"):
             browser.open('https://demoqa.com/automation-practice-form')
-            # Удаляем мешающие элементы при открытии формы
+            browser.driver.maximize_window()
+            # Удаляем мешающие элементы и ждем загрузки
             self.remove_obstructing_elements()
+            time.sleep(2)  # Ждем полной загрузки страницы
         return self
 
     def register(self, user: User):
         file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'resources', user.file_name))
 
-        # Прокручиваем в начало для начала заполнения
+        # Прокручиваем в начало
         browser.execute_script("window.scrollTo(0, 0);")
-        time.sleep(0.5)
+        time.sleep(1)
 
         with allure.step("Заполнение имени"):
             browser.element('#firstName').type(user.first_name)
@@ -31,7 +33,10 @@ class RegistrationPage:
             browser.element('#userEmail').type(user.email)
 
         with allure.step("Выбор пола"):
-            browser.element(f'//label[text()="{user.gender}"]').click()
+            # Используем более надежный селектор для radio button
+            gender_input = browser.element(f'//input[@value="{user.gender.lower()}"]')
+            browser.driver.execute_script("arguments[0].scrollIntoView(true);", gender_input.locate())
+            browser.driver.execute_script("arguments[0].click();", gender_input.locate())
 
         with allure.step("Заполнение номера телефона"):
             browser.element('#userNumber').type(user.phone)
@@ -40,14 +45,20 @@ class RegistrationPage:
             browser.element('#dateOfBirthInput').click()
             browser.element('.react-datepicker__month-select').send_keys(user.month)
             browser.element('.react-datepicker__year-select').send_keys(str(user.year))
-            browser.element(f'.react-datepicker__day--0{user.day:02}').click()
+            # Исправленный селектор для дня
+            day_element = browser.element(f'//div[contains(@class, "react-datepicker__day") and text()="{user.day}"]')
+            browser.driver.execute_script("arguments[0].click();", day_element.locate())
 
         with allure.step("Выбор предмета"):
-            browser.element('#subjectsInput').should(be.visible).type(user.subject).press_enter()
+            browser.element('#subjectsInput').should(be.visible).type(user.subject)
+            # Ждем появления опций и выбираем первую
+            browser.element('div[class*="option"]').with_(timeout=5).click()
 
         with allure.step("Выбор хобби"):
-            element = browser.element(f'//label[text()="{user.hobby}"]')
-            browser.driver.execute_script("arguments[0].click();", element.locate())
+            # Используем input для хобби
+            hobby_input = browser.element(f'//input[@value="{user.hobby.lower()}"]')
+            browser.driver.execute_script("arguments[0].scrollIntoView(true);", hobby_input.locate())
+            browser.driver.execute_script("arguments[0].click();", hobby_input.locate())
 
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
@@ -64,9 +75,9 @@ class RegistrationPage:
         with allure.step("Отправка формы"):
             # Прокручиваем к кнопке и кликаем через JavaScript
             browser.execute_script("document.querySelector('#city').scrollIntoView(true);")
-            time.sleep(0.5)
+            time.sleep(1)
             browser.execute_script("window.scrollBy(0, 100);")
-            time.sleep(0.5)
+            time.sleep(1)
             browser.execute_script("document.querySelector('#submit').click();")
 
         return self
@@ -93,25 +104,20 @@ class RegistrationPage:
                                 break;
                             }}
                         }}
-                    }}, 1000);
+                    }}, 2000);
                 }}
             """)
-            time.sleep(1.5)  # Ждем завершения выбора
+            time.sleep(2)  # Ждем завершения выбора
         except Exception as e:
             print(f"Error selecting dropdown option {option_text}: {e}")
-            # Альтернативный способ через ввод текста
+            # Альтернативный способ
             try:
                 browser.execute_script(f"""
                     var dropdown = document.querySelector('{dropdown_selector}');
                     if (dropdown) {{
-                        var input = dropdown.querySelector('input');
-                        if (input) {{
-                            input.value = '{option_text}';
-                            var event = new Event('input', {{ bubbles: true }});
-                            input.dispatchEvent(event);
-                            var changeEvent = new Event('change', {{ bubbles: true }});
-                            input.dispatchEvent(changeEvent);
-                        }}
+                        dropdown.value = '{option_text}';
+                        var event = new Event('change', {{ bubbles: true }});
+                        dropdown.dispatchEvent(event);
                     }}
                 """)
             except Exception as e2:
@@ -143,6 +149,9 @@ class RegistrationPage:
                         }
                     });
                 });
+
+                // Включаем прокрутку
+                document.body.style.overflow = 'auto';
             """)
         except Exception as e:
             print(f"Error removing elements: {e}")
