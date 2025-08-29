@@ -6,7 +6,7 @@ from lesson_jenkins.homework11.models.user import User
 
 
 def test_fill_form():
-    sofi = User(
+    margo = User(
         first_name="Маргарита",
         last_name="Иванова",
         email="sofia@example.com",
@@ -25,5 +25,5 @@ def test_fill_form():
 
     registration_page = RegistrationPage()
     registration_page.open_form()
-    registration_page.register(sofi)
-    registration_page.should_have_registered(sofi)
+    registration_page.register(margo)
+    registration_page.should_have_registered(margo)
