@@ -37,6 +37,15 @@ class RegistrationPage:
             browser.driver.execute_script("arguments[0].click();", element.locate())
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
+        with allure.step("Выбор адреса"):
+            browser.execute_script("document.querySelector('#uploadPicture').scrollIntoView(true);")
+            browser.element('#currentAddress').type(user.address)
+            browser.execute_script("document.querySelector('#currentAddress').scrollIntoView(true);")
+            self.select_dropdown_option('#state', user.state)
+            self.select_dropdown_option('#city', user.city)
+            browser.execute_script("document.querySelector('#city').scrollIntoView(true);")
+            time.sleep(0.5)
+            browser.execute_script("window.scrollBy(0, 100);")
         with allure.step("Отправка формы"):
             browser.element('#submit').click()
         return self
