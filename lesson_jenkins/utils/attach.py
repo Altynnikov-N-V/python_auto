@@ -11,13 +11,28 @@ def add_screenshot(browser):
     )
 
 def add_logs(browser):
-    log = "".join(f'{text}\n' for text in browser.driver.get_log('browser'))
-    allure.attach(
-        body=log,
-        name='browser_logs',
-        attachment_type=allure.attachment_type.TEXT,
-        extension='.log'
-    )
+    try:
+        # Проверяем, поддерживает ли драйвер логи
+        if hasattr(browser.driver, 'get_log'):
+            logs = browser.driver.get_log('browser')
+            log_text = "".join(f'{log["level"]}: {log["message"]}\n' for log in logs)
+            allure.attach(
+                log_text,
+                name="Browser Logs",
+                attachment_type=allure.attachment_type.TEXT
+            )
+        else:
+            allure.attach(
+                "Browser logs not supported for this driver",
+                name="Browser Logs Info",
+                attachment_type=allure.attachment_type.TEXT
+            )
+    except Exception as e:
+        allure.attach(
+            f"Error getting browser logs: {str(e)}",
+            name="Browser Logs Error",
+            attachment_type=allure.attachment_type.TEXT
+        )
 
 def add_html(browser):
     html = browser.driver.page_source
