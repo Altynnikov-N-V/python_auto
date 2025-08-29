@@ -55,7 +55,7 @@ class RegistrationPage:
             browser.execute_script("arguments[0].scrollIntoView(true);", city_option.locate())
             browser.execute_script("arguments[0].click();", city_option.locate())
         with allure.step("Отправка формы"):
-            browser.element('#submit').press_enter()
+            browser.element('#submit').click()
         return self
 
     def should_have_registered(self, user: User):
