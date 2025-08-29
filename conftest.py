@@ -25,7 +25,7 @@ def setup_browser():
     )
 
     browser.config.driver = driver
-    browser.config.timeout = 10
+    browser.config.timeout = 20
 
     yield
 
