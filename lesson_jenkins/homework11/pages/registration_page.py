@@ -39,12 +39,21 @@ class RegistrationPage:
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
         with allure.step("Выбор адреса"):
-            browser.element('#currentAddress').type(user.address)
             state_element = browser.element('#state')
-            browser.execute_script("arguments[0].click();", state_element)
+            browser.execute_script("arguments[0].scrollIntoView(true);", state_element.locate())
+            browser.execute_script("arguments[0].click();", state_element.locate())
+
             state_option = browser.element(f'//div[text()="{user.state}"]')
-            browser.execute_script("arguments[0].click();", state_option)
-            browser.element('#city').click().element(f'//div[text()="{user.city}"]').click()
+            browser.execute_script("arguments[0].scrollIntoView(true);", state_option.locate())
+            browser.execute_script("arguments[0].click();", state_option.locate())
+
+            city_element = browser.element('#city')
+            browser.execute_script("arguments[0].scrollIntoView(true);", city_element.locate())
+            browser.execute_script("arguments[0].click();", city_element.locate())
+
+            city_option = browser.element(f'//div[text()="{user.city}"]')
+            browser.execute_script("arguments[0].scrollIntoView(true);", city_option.locate())
+            browser.execute_script("arguments[0].click();", city_option.locate())
         with allure.step("Отправка формы"):
             browser.element('#submit').press_enter()
         return self
