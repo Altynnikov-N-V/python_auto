@@ -33,10 +33,10 @@ class RegistrationPage:
             browser.element('#userEmail').type(user.email)
 
         with allure.step("Выбор пола"):
-            # Используем более надежный селектор для radio button
-            gender_input = browser.element(f'//input[@value="{user.gender.lower()}"]')
-            browser.driver.execute_script("arguments[0].scrollIntoView(true);", gender_input.locate())
-            browser.driver.execute_script("arguments[0].click();", gender_input.locate())
+            # Правильный селектор для radio button - используем label с текстом
+            gender_label = browser.element(f'//label[contains(text(), "{user.gender}")]')
+            browser.driver.execute_script("arguments[0].scrollIntoView(true);", gender_label.locate())
+            browser.driver.execute_script("arguments[0].click();", gender_label.locate())
 
         with allure.step("Заполнение номера телефона"):
             browser.element('#userNumber').type(user.phone)
@@ -46,7 +46,8 @@ class RegistrationPage:
             browser.element('.react-datepicker__month-select').send_keys(user.month)
             browser.element('.react-datepicker__year-select').send_keys(str(user.year))
             # Исправленный селектор для дня
-            day_element = browser.element(f'//div[contains(@class, "react-datepicker__day") and text()="{user.day}"]')
+            day_element = browser.element(
+                f'//div[contains(@class, "react-datepicker__day") and not(contains(@class, "outside")) and text()="{user.day}"]')
             browser.driver.execute_script("arguments[0].click();", day_element.locate())
 
         with allure.step("Выбор предмета"):
@@ -55,10 +56,10 @@ class RegistrationPage:
             browser.element('div[class*="option"]').with_(timeout=5).click()
 
         with allure.step("Выбор хобби"):
-            # Используем input для хобби
-            hobby_input = browser.element(f'//input[@value="{user.hobby.lower()}"]')
-            browser.driver.execute_script("arguments[0].scrollIntoView(true);", hobby_input.locate())
-            browser.driver.execute_script("arguments[0].click();", hobby_input.locate())
+            # Правильный селектор для хобби - используем label с текстом
+            hobby_label = browser.element(f'//label[contains(text(), "{user.hobby}")]')
+            browser.driver.execute_script("arguments[0].scrollIntoView(true);", hobby_label.locate())
+            browser.driver.execute_script("arguments[0].click();", hobby_label.locate())
 
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
@@ -110,16 +111,12 @@ class RegistrationPage:
             time.sleep(2)  # Ждем завершения выбора
         except Exception as e:
             print(f"Error selecting dropdown option {option_text}: {e}")
-            # Альтернативный способ
+            # Альтернативный способ - простой клик по dropdown
             try:
-                browser.execute_script(f"""
-                    var dropdown = document.querySelector('{dropdown_selector}');
-                    if (dropdown) {{
-                        dropdown.value = '{option_text}';
-                        var event = new Event('change', {{ bubbles: true }});
-                        dropdown.dispatchEvent(event);
-                    }}
-                """)
+                browser.element(dropdown_selector).click()
+                time.sleep(1)
+                option = browser.element(f'//div[text()="{option_text}"]')
+                option.click()
             except Exception as e2:
                 print(f"Alternative method also failed: {e2}")
 
