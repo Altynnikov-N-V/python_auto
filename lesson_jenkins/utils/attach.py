@@ -10,27 +10,54 @@ def add_screenshot(browser):
         extension='.png'
     )
 
+
 def add_logs(browser):
     try:
-        # Проверяем, поддерживает ли драйвер логи
-        if hasattr(browser.driver, 'get_log'):
-            logs = browser.driver.get_log('browser')
-            log_text = "".join(f'{log["level"]}: {log["message"]}\n' for log in logs)
-            allure.attach(
-                log_text,
-                name="Browser Logs",
-                attachment_type=allure.attachment_type.TEXT
-            )
+        # Проверяем, поддерживает ли драйвер логи и есть ли метод get_log
+        driver = browser.driver
+        if hasattr(driver, 'get_log') and callable(getattr(driver, 'get_log')):
+            try:
+                logs = driver.get_log('browser')
+                log_text = "".join(f'{log["level"]}: {log["message"]}\n' for log in logs)
+                allure.attach(
+                    log_text,
+                    name="Browser Logs",
+                    attachment_type=allure.attachment_type.TEXT
+                )
+            except Exception as log_error:
+                # Если get_log есть, но не работает
+                allure.attach(
+                    f"Error getting browser logs: {str(log_error)}",
+                    name="Browser Logs Error",
+                    attachment_type=allure.attachment_type.TEXT
+                )
         else:
+            # Получаем базовую информацию о драйвере
+            driver_info = f"Driver: {type(driver).__name__}\n"
+            driver_info += f"Capabilities: {getattr(driver, 'capabilities', 'N/A')}\n"
+
+            # Пытаемся получить консольные логи через JavaScript
+            try:
+                console_logs = driver.execute_script("return window.console && console.logs ? console.logs : [];")
+                if console_logs:
+                    console_text = "".join(f'{log}\n' for log in console_logs)
+                    allure.attach(
+                        console_text,
+                        name="Console Logs (JS)",
+                        attachment_type=allure.attachment_type.TEXT
+                    )
+            except Exception as js_error:
+                console_logs = None
+
             allure.attach(
-                "Browser logs not supported for this driver",
+                f"Browser logs not supported for this driver\n{driver_info}",
                 name="Browser Logs Info",
                 attachment_type=allure.attachment_type.TEXT
             )
     except Exception as e:
         allure.attach(
-            f"Error getting browser logs: {str(e)}",
-            name="Browser Logs Error",
+            f"Error in add_logs function: {str(e)}",
+            name="Browser Logs Function Error",
             attachment_type=allure.attachment_type.TEXT
         )
 
