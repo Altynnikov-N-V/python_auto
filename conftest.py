@@ -3,13 +3,19 @@ import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selene import browser
+from dotenv import load_dotenv
+
+
+@pytest.fixture(scope='session', autouse=True)
+def load_env():
+    load_dotenv()
 
 
 @pytest.fixture(scope='function', autouse=True)
 def setup_browser():
-    login = os.getenv('SELENOID_LOGIN', 'user1')
-    password = os.getenv('SELENOID_PASS', '1234')
-    host = os.getenv('SELENOID_URL', 'selenoid.autotests.cloud')
+    login = os.getenv('LOGIN')
+    password = os.getenv('PASSWORD')
+    host = os.getenv('SELENOID_URL')
 
     options = Options()
     options.set_capability('browserName', 'chrome')
