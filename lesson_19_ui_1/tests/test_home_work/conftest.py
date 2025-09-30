@@ -1,7 +1,7 @@
 import pytest
 import allure
 import time
-import config
+from lesson_19_ui_1.tests.test_home_work import config
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
