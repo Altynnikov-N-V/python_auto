@@ -35,8 +35,8 @@ def driver():
         "deviceName": "Samsung Galaxy S23",
         "app": "bs://sample.app",
         "bstack:options": {
-            "userName": config.bstack_username,
-            "accessKey": config.bstack_accesskey,
+            "userName": config.bstack_userName,
+            "accessKey": config.bstack_accessKey,
             "projectName": "First Python project",
             "buildName": "browserstack-build-2",
             "sessionName": "BStack home_work",
