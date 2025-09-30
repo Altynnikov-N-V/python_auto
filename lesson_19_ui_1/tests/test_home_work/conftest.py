@@ -1,20 +1,30 @@
 import pytest
-import requests
-import time
 import allure
+import time
+import config
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
-BROWSERSTACK_USERNAME = "bsuser_oH0Eba"
-BROWSERSTACK_ACCESS_KEY = "gvxzoGEYMxuigMaqnWxY"
-
-def get_browserstack_video_url(session_id):
-    url = f"https://api.browserstack.com/app-automate/sessions/{session_id}.json"
-    resp = requests.get(url, auth=(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY))
-    if resp.status_code == 200:
-        data = resp.json()
-        return data.get("automation_session", {}).get("video_url")
-    return None
+def attach_bstack_video(session_id):
+    import requests
+    bstack_session = requests.get(
+        f'https://api.browserstack.com/app-automate/sessions/{session_id}.json',
+        auth=(config.bstack_userName, config.bstack_accessKey),
+    ).json()
+    print(bstack_session)
+    video_url = bstack_session['automation_session'].get('video_url')
+    if video_url:
+        allure.attach(
+            '<html><body>'
+            '<video width="100%" height="100%" controls autoplay>'
+            f'<source src="{video_url}" type="video/mp4">'
+            '</video>'
+            '</body></html>',
+            name='video recording',
+            attachment_type=allure.attachment_type.HTML,
+        )
+    else:
+        print("Видео из BrowserStack не найдено в ответе API")
 
 @pytest.fixture(scope="function")
 def driver():
@@ -25,17 +35,17 @@ def driver():
         "deviceName": "Samsung Galaxy S23",
         "app": "bs://sample.app",
         "bstack:options": {
-            "userName": BROWSERSTACK_USERNAME,
-            "accessKey": BROWSERSTACK_ACCESS_KEY,
+            "userName": config.bstack_userName,
+            "accessKey": config.bstack_accessKey,
             "projectName": "First Python project",
             "buildName": "browserstack-build-2",
             "sessionName": "BStack home_work",
-            "video": True
+            "video": True,
         }
     })
 
     driver = webdriver.Remote("http://hub.browserstack.com/wd/hub", options=options)
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(10)  # Неявные ожидания
 
     yield driver
 
@@ -45,22 +55,11 @@ def driver():
         logs = driver.get_log('logcat')
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
 
-        session_id = driver.session_id
-        time.sleep(35)
-
-        video_url = get_browserstack_video_url(session_id)
-        if video_url:
-            print(f"BrowserStack video URL: {video_url}")
-            video_resp = requests.get(video_url)
-            if video_resp.status_code == 200:
-                allure.attach(video_resp.content, name="test_execution_video.mp4", attachment_type="video/mp4")
-            else:
-                print(f"Failed to download video, status code {video_resp.status_code}")
-        else:
-            print("Video URL not found")
+        time.sleep(15)
+        attach_bstack_video(driver.session_id)
 
     except Exception as e:
-        print(f"Error attaching video: {e}")
+        print(f"Ошибка при добавлении аттачей: {e}")
 
     driver.quit()
 
