@@ -10,9 +10,9 @@ BROWSERSTACK_ACCESS_KEY = "gvxzoGEYMxuigMaqnWxY"
 
 def get_browserstack_video_url(session_id):
     url = f"https://api.browserstack.com/app-automate/sessions/{session_id}.json"
-    response = requests.get(url, auth=(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY))
-    if response.status_code == 200:
-        data = response.json()
+    resp = requests.get(url, auth=(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY))
+    if resp.status_code == 200:
+        data = resp.json()
         return data.get("automation_session", {}).get("video_url")
     return None
 
@@ -40,32 +40,27 @@ def driver():
     yield driver
 
     try:
-        screenshot = driver.get_screenshot_as_png()
-        allure.attach(screenshot, name="screenshot_final", attachment_type=allure.attachment_type.PNG)
-
-        page_source = driver.page_source
-        allure.attach(page_source, name="page_source_final", attachment_type=allure.attachment_type.XML)
-
+        allure.attach(driver.get_screenshot_as_png(), name="screenshot_final", attachment_type=allure.attachment_type.PNG)
+        allure.attach(driver.page_source, name="page_source_final", attachment_type=allure.attachment_type.XML)
         logs = driver.get_log('logcat')
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
 
         session_id = driver.session_id
-
-        time.sleep(15)
+        time.sleep(35)
 
         video_url = get_browserstack_video_url(session_id)
         if video_url:
             print(f"BrowserStack video URL: {video_url}")
-            video_response = requests.get(video_url)
-            if video_response.status_code == 200:
-                allure.attach(video_response.content, name="test_execution_video", attachment_type=allure.attachment_type.MP4)
+            video_resp = requests.get(video_url)
+            if video_resp.status_code == 200:
+                allure.attach(video_resp.content, name="test_execution_video.mp4", attachment_type="video/mp4")
             else:
-                print(f"Не удалось скачать видео, статус: {video_response.status_code}")
+                print(f"Failed to download video, status code {video_resp.status_code}")
         else:
-            print("URL видео не найден в ответе BrowserStack API")
+            print("Video URL not found")
 
     except Exception as e:
-        print(f"Ошибка при прикреплении видео: {e}")
+        print(f"Error attaching video: {e}")
 
     driver.quit()
 
@@ -77,7 +72,6 @@ def pytest_runtest_makereport(item, call):
         driver = item.funcargs.get("driver")
         if driver:
             try:
-                screenshot = driver.get_screenshot_as_png()
-                allure.attach(screenshot, name="screenshot_on_failure", attachment_type=allure.attachment_type.PNG)
+                allure.attach(driver.get_screenshot_as_png(), name="screenshot_on_failure", attachment_type=allure.attachment_type.PNG)
             except Exception:
                 pass
