@@ -1,15 +1,18 @@
+import os
 import pytest
 import allure
 import time
-from lesson_19_ui_1.tests.test_home_work import config
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
 def attach_bstack_video(session_id):
     import requests
+    bstack_user = os.getenv("BROWSERSTACK_USERNAME")
+    bstack_key = os.getenv("BROWSERSTACK_ACCESS_KEY")
+
     bstack_session = requests.get(
         f'https://api.browserstack.com/app-automate/sessions/{session_id}.json',
-        auth=(config.bstack_userName, config.bstack_accessKey),
+        auth=(bstack_user, bstack_key),
     ).json()
     print(bstack_session)
     video_url = bstack_session['automation_session'].get('video_url')
@@ -24,10 +27,13 @@ def attach_bstack_video(session_id):
             attachment_type=allure.attachment_type.HTML,
         )
     else:
-        print("Видео из BrowserStack не найдено в ответе API")
+        print("Видео из BrowserStack не найдено")
 
 @pytest.fixture(scope="function")
 def driver():
+    bstack_user = os.getenv("BROWSERSTACK_USERNAME")
+    bstack_key = os.getenv("BROWSERSTACK_ACCESS_KEY")
+
     options = UiAutomator2Options()
     options.load_capabilities({
         "platformName": "Android",
@@ -35,8 +41,8 @@ def driver():
         "deviceName": "Samsung Galaxy S23",
         "app": "bs://sample.app",
         "bstack:options": {
-            "userName": config.bstack_userName,
-            "accessKey": config.bstack_accessKey,
+            "userName": bstack_user,
+            "accessKey": bstack_key,
             "projectName": "First Python project",
             "buildName": "browserstack-build-2",
             "sessionName": "BStack home_work",
@@ -54,7 +60,9 @@ def driver():
         allure.attach(driver.page_source, name="page_source_final", attachment_type=allure.attachment_type.XML)
         logs = driver.get_log('logcat')
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
-        time.sleep(5)
+
+        time.sleep(5)  # Таймаут на создание видео на сервере
+
         attach_bstack_video(driver.session_id)
 
     except Exception as e:
