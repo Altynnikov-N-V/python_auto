@@ -55,7 +55,8 @@ def driver():
         logs = driver.get_log('logcat')
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
 
-        time.sleep(15)
+        time.sleep(5)
+
         attach_bstack_video(driver.session_id)
 
     except Exception as e:
