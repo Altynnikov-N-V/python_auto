@@ -1,5 +1,4 @@
-import allure
-from allure_commons._allure import step
+
 from appium.webdriver.common.appiumby import AppiumBy
 
 def test_search_wikipedia_str(driver):
