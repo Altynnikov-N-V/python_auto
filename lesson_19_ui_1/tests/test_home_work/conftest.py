@@ -4,17 +4,16 @@ import allure
 import time
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
+import requests
+
+BROWSERSTACK_USERNAME = os.getenv("BROWSERSTACK_USERNAME")
+BROWSERSTACK_ACCESS_KEY = os.getenv("BROWSERSTACK_ACCESS_KEY")
 
 def attach_bstack_video(session_id):
-    import requests
-    bstack_user = os.getenv("BROWSERSTACK_USERNAME")
-    bstack_key = os.getenv("BROWSERSTACK_ACCESS_KEY")
-
     bstack_session = requests.get(
         f'https://api.browserstack.com/app-automate/sessions/{session_id}.json',
-        auth=(bstack_user, bstack_key),
+        auth=(BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY),
     ).json()
-    print(bstack_session)
     video_url = bstack_session['automation_session'].get('video_url')
     if video_url:
         allure.attach(
@@ -26,14 +25,9 @@ def attach_bstack_video(session_id):
             name='video recording',
             attachment_type=allure.attachment_type.HTML,
         )
-    else:
-        print("Видео из BrowserStack не найдено")
 
 @pytest.fixture(scope="function")
 def driver():
-    bstack_user = os.getenv("BROWSERSTACK_USERNAME")
-    bstack_key = os.getenv("BROWSERSTACK_ACCESS_KEY")
-
     options = UiAutomator2Options()
     options.load_capabilities({
         "platformName": "Android",
@@ -41,8 +35,8 @@ def driver():
         "deviceName": "Samsung Galaxy S23",
         "app": "bs://sample.app",
         "bstack:options": {
-            "userName": bstack_user,
-            "accessKey": bstack_key,
+            "userName": BROWSERSTACK_USERNAME,
+            "accessKey": BROWSERSTACK_ACCESS_KEY,
             "projectName": "First Python project",
             "buildName": "browserstack-build-2",
             "sessionName": "BStack home_work",
@@ -61,7 +55,7 @@ def driver():
         logs = driver.get_log('logcat')
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
 
-        time.sleep(5)  # Таймаут на создание видео на сервере
+        time.sleep(5)
 
         attach_bstack_video(driver.session_id)
 

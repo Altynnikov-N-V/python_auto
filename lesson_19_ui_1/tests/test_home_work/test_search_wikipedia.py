@@ -2,7 +2,6 @@ import allure
 from allure_commons._allure import step
 from appium.webdriver.common.appiumby import AppiumBy
 
-@step('Открытие любой статьи и клик на нее')
 def test_search_wikipedia_str(driver):
     search_element = driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Search Wikipedia")
     search_element.click()
