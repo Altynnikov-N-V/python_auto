@@ -45,7 +45,7 @@ def driver():
     })
 
     driver = webdriver.Remote("http://hub.browserstack.com/wd/hub", options=options)
-    driver.implicitly_wait(10)  # Неявные ожидания
+    driver.implicitly_wait(10)
 
     yield driver
 
@@ -54,9 +54,7 @@ def driver():
         allure.attach(driver.page_source, name="page_source_final", attachment_type=allure.attachment_type.XML)
         logs = driver.get_log('logcat')
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
-
         time.sleep(5)
-
         attach_bstack_video(driver.session_id)
 
     except Exception as e:
