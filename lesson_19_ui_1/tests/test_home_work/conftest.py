@@ -1,5 +1,6 @@
 import pytest
 import requests
+import time
 import allure
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
@@ -28,7 +29,8 @@ def driver():
             "accessKey": BROWSERSTACK_ACCESS_KEY,
             "projectName": "First Python project",
             "buildName": "browserstack-build-2",
-            "sessionName": "BStack home_work"
+            "sessionName": "BStack home_work",
+            "video": True
         }
     })
 
@@ -48,14 +50,22 @@ def driver():
         allure.attach(str(logs), name="logcat_final", attachment_type=allure.attachment_type.TEXT)
 
         session_id = driver.session_id
+
+        time.sleep(15)
+
         video_url = get_browserstack_video_url(session_id)
         if video_url:
+            print(f"BrowserStack video URL: {video_url}")
             video_response = requests.get(video_url)
             if video_response.status_code == 200:
                 allure.attach(video_response.content, name="test_execution_video", attachment_type=allure.attachment_type.MP4)
+            else:
+                print(f"Не удалось скачать видео, статус: {video_response.status_code}")
+        else:
+            print("URL видео не найден в ответе BrowserStack API")
 
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Ошибка при прикреплении видео: {e}")
 
     driver.quit()
 
